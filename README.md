@@ -1,6 +1,6 @@
 # 🎵 Pulse: The AI-Powered Music Discovery Feed
 
-Welcome to **Pulse**, a modern, TikTok-style music discovery application powered by artificial intelligence and the Spotify API. This project was built through a multi-phase journey (Phase 0 to Phase 7) to create a highly personalized, swipeable music feed that perfectly matches your current mood.
+Welcome to **Pulse**, a modern,Music discovery application powered by artificial intelligence and the Spotify API. This project was built through a multi-phase journey (Phase 0 to Phase 7) to create a highly personalized, swipeable music feed that perfectly matches your current mood.
 
 ---
 
