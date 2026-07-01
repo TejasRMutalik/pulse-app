@@ -10,7 +10,9 @@ const VIBE_CHIPS = [
   "Wind-down", "Discover"
 ];
 
-export default function PulseLanding({ setTracks, setIntentSummary, setVibeData, loading, setLoading }: any) {
+import { getSpotifyTracksClient } from '@/utils/spotifySearch';
+
+export default function PulseLanding({ setTracks, setIntentSummary, setVibeData, loading, setLoading, accessToken }: any) {
   const [prompt, setPrompt] = useState("");
   const [isSurpriseMe, setIsSurpriseMe] = useState(false);
   const adventure = isSurpriseMe ? 100 : 20;
@@ -49,22 +51,11 @@ export default function PulseLanding({ setTracks, setIntentSummary, setVibeData,
         setIntentSummary(vibeData.intent_summary);
         setVibeData(vibeData);
 
-        const tracksRes = await fetch('/api/get-tracks', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                audio_targets: vibeData.audio_targets,
-                seed_genres: vibeData.seed_genres,
-                popularity_ceiling: vibeData.popularity_ceiling,
-                discovery_bias: vibeData.discovery_bias,
-                pulse_memory: memory
-            })
-        });
-        const tracksData = await tracksRes.json();
+        if (!accessToken) throw new Error("No Spotify access token available.");
+
+        const validTracks = await getSpotifyTracksClient(vibeData, 0, memory, accessToken);
         
-        if (tracksData.error) throw new Error(tracksData.error);
-        
-        setTracks(tracksData.tracks || []);
+        setTracks(validTracks || []);
     } catch (err: any) {
         // Just alert the user, don't console.error so Next.js doesn't show the red overlay
         alert(err.message || "Failed to generate Pulse. Please try again.");
