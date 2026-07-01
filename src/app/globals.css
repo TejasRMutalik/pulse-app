@@ -1,26 +1,49 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  /* Spotify Palette */
+  --color-spotify-green: #1ed760;
+  --color-spotify-base: #121212;
+  --color-spotify-surface: #181818;
+  --color-spotify-elevated: #1f1f1f;
+  
+  --color-spotify-text: #ffffff;
+  --color-spotify-text-muted: #b3b3b3;
+  --color-spotify-text-subdued: #cbcbcb;
+  
+  --color-spotify-negative: #f3727f;
+  --color-spotify-warning: #ffa42b;
+  --color-spotify-announcement: #539df5;
+
+  --color-spotify-card: #252525;
+  --color-spotify-card-mid: #272727;
+  --color-spotify-border: #4d4d4d;
+  --color-spotify-border-light: #7c7c7c;
+
+  /* Shadows */
+  --shadow-spotify-heavy: rgba(0,0,0,0.5) 0px 8px 24px;
+  --shadow-spotify-medium: rgba(0,0,0,0.3) 0px 8px 8px;
+  --shadow-spotify-inset: rgb(18,18,18) 0px 1px 0px, rgb(124,124,124) 0px 0px 0px 1px inset;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --background: #121212; /* spotify-base */
+  --foreground: #ffffff;
+  color-scheme: dark;
 }
 
-body {
+html, body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* Prevent scrollbars to mimic mobile app */
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+}
+
+* {
+  box-sizing: border-box;
 }
