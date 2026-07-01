@@ -14,8 +14,6 @@ import { getSpotifyTracksClient } from '@/utils/spotifySearch';
 
 export default function PulseLanding({ setTracks, setIntentSummary, setVibeData, loading, setLoading, accessToken }: any) {
   const [prompt, setPrompt] = useState("");
-  const [isSurpriseMe, setIsSurpriseMe] = useState(false);
-  const adventure = isSurpriseMe ? 100 : 20;
   const [loadingStep, setLoadingStep] = useState(0);
   const loadingSteps = ["Reading the vibe...", "Finding tracks...", "Tuning the order..."];
 
@@ -23,7 +21,6 @@ export default function PulseLanding({ setTracks, setIntentSummary, setVibeData,
     setLoading(true);
     setLoadingStep(0);
     
-    // Simulate progression of loading steps
     const interval = setInterval(() => {
         setLoadingStep(prev => Math.min(prev + 1, 2));
     }, 1500);
@@ -40,7 +37,7 @@ export default function PulseLanding({ setTracks, setIntentSummary, setVibeData,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
                 prompt, 
-                adventure_level: adventure,
+                adventure_level: 20,
                 pulse_memory: memory 
             })
         });
@@ -57,7 +54,6 @@ export default function PulseLanding({ setTracks, setIntentSummary, setVibeData,
         
         setTracks(validTracks || []);
     } catch (err: any) {
-        // Just alert the user, don't console.error so Next.js doesn't show the red overlay
         alert(err.message || "Failed to generate Pulse. Please try again.");
     } finally {
         clearInterval(interval);
@@ -73,22 +69,6 @@ export default function PulseLanding({ setTracks, setIntentSummary, setVibeData,
     >
         <div className="relative flex items-center justify-center">
             <h2 className="text-2xl font-bold text-white">What's the vibe right now?</h2>
-            
-            {/* Compact Toggle in Top Right */}
-            <div className="absolute right-0 flex items-center gap-2 text-[9px] font-bold text-spotify-text-muted uppercase tracking-widest">
-                <span className={!isSurpriseMe ? 'text-white' : ''}>Familiar</span>
-                
-                <button
-                    onClick={() => setIsSurpriseMe(!isSurpriseMe)}
-                    className={`w-10 h-5 rounded-full flex items-center p-[2px] transition-colors duration-300 ease-in-out ${isSurpriseMe ? 'bg-spotify-green' : 'bg-spotify-card-mid'}`}
-                >
-                    <div 
-                        className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 ease-in-out ${isSurpriseMe ? 'translate-x-5' : 'translate-x-0'}`}
-                    />
-                </button>
-                
-                <span className={isSurpriseMe ? 'text-white' : ''}>Surprise</span>
-            </div>
         </div>
 
         {/* Quick Vibe Chips - Horizontal Scroll */}
@@ -115,8 +95,6 @@ export default function PulseLanding({ setTracks, setIntentSummary, setVibeData,
                 className="w-full bg-spotify-elevated text-white rounded-full py-4 pl-12 pr-4 outline-none border border-spotify-border focus:border-white shadow-spotify-inset transition-colors placeholder:text-spotify-text-muted"
             />
         </div>
-
-
 
         {/* Generate Button */}
         <button
