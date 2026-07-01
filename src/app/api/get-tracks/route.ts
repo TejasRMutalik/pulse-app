@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]/route';
+import axios from 'axios';
 
 export async function POST(req: NextRequest) {
   try {
@@ -41,30 +42,15 @@ export async function POST(req: NextRequest) {
         "Accept": "application/json"
     };
 
-    let searchRes = await fetch(`https://api.spotify.com/v1/search?${params.toString()}`, {
-        headers: spotifyHeaders,
-        cache: 'no-store'
-    });
-
-    // Vercel IPs sometimes trigger 502 Bad Gateway on Spotify. Retry once.
-    if (searchRes.status === 502) {
-        console.log("Spotify returned 502. Retrying in 1 second...");
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        searchRes = await fetch(`https://api.spotify.com/v1/search?${params.toString()}`, {
-            headers: spotifyHeaders,
-            cache: 'no-store'
-        });
+    let searchData;
+    try {
+        const res = await axios.get(`https://api.spotify.com/v1/search?${params.toString()}`, { headers: spotifyHeaders });
+        searchData = res.data;
+    } catch (err: any) {
+        console.error("Spotify search axios error:", err.response?.status, err.response?.data || err.message);
+        return NextResponse.json({ error: `Spotify API Error (${err.response?.status}): ${JSON.stringify(err.response?.data || err.message)}` }, { status: err.response?.status || 500 });
     }
 
-    if (!searchRes.ok) {
-        const err = await searchRes.text();
-        console.error("Spotify search HTTP STATUS:", searchRes.status);
-        console.error("Spotify search error text:", err);
-        return NextResponse.json({ error: `Spotify API Error (${searchRes.status}): ${err}` }, { status: searchRes.status });
-    }
-
-    const searchData = await searchRes.json();
-    
     // Spotify has deprecated preview_url for much of its catalog.
     // We will just take the tracks as-is.
     let validTracks = searchData.tracks?.items || [];
@@ -89,13 +75,10 @@ export async function POST(req: NextRequest) {
             type: "track",
             offset: offset.toString()
         });
-        const fallbackRes = await fetch(`https://api.spotify.com/v1/search?${fallbackParams.toString()}`, {
-            headers: spotifyHeaders,
-            cache: 'no-store'
-        });
-        if (fallbackRes.ok) {
-            const fallbackData = await fallbackRes.json();
-            const fallbackValid = fallbackData.tracks?.items || [];
+        
+        try {
+            const fallbackRes = await axios.get(`https://api.spotify.com/v1/search?${fallbackParams.toString()}`, { headers: spotifyHeaders });
+            const fallbackValid = fallbackRes.data.tracks?.items || [];
             console.log(`Fallback raw tracks: ${fallbackValid.length}`);
             
             const existingIds = new Set(validTracks.map((t: any) => t.id));
@@ -104,9 +87,8 @@ export async function POST(req: NextRequest) {
             newTracks = applyFilter(newTracks);
             console.log(`Fallback after memory filter: ${newTracks.length}`);
             validTracks = [...validTracks, ...newTracks];
-        } else {
-            console.log(`Fallback search HTTP error: ${fallbackRes.status}`);
-            console.log(await fallbackRes.text());
+        } catch (err: any) {
+            console.error("Fallback axios error:", err.response?.status, err.response?.data || err.message);
         }
     }
 
