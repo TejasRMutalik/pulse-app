@@ -42,7 +42,8 @@ export async function POST(req: NextRequest) {
     };
 
     let searchRes = await fetch(`https://api.spotify.com/v1/search?${params.toString()}`, {
-        headers: spotifyHeaders
+        headers: spotifyHeaders,
+        cache: 'no-store'
     });
 
     // Vercel IPs sometimes trigger 502 Bad Gateway on Spotify. Retry once.
@@ -50,7 +51,8 @@ export async function POST(req: NextRequest) {
         console.log("Spotify returned 502. Retrying in 1 second...");
         await new Promise(resolve => setTimeout(resolve, 1000));
         searchRes = await fetch(`https://api.spotify.com/v1/search?${params.toString()}`, {
-            headers: spotifyHeaders
+            headers: spotifyHeaders,
+            cache: 'no-store'
         });
     }
 
@@ -88,7 +90,8 @@ export async function POST(req: NextRequest) {
             offset: offset.toString()
         });
         const fallbackRes = await fetch(`https://api.spotify.com/v1/search?${fallbackParams.toString()}`, {
-            headers: spotifyHeaders
+            headers: spotifyHeaders,
+            cache: 'no-store'
         });
         if (fallbackRes.ok) {
             const fallbackData = await fallbackRes.json();
