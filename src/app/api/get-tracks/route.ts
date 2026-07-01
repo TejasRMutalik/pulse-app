@@ -37,9 +37,18 @@ export async function POST(req: NextRequest) {
 
     console.log("Spotify Search URL:", `https://api.spotify.com/v1/search?${params.toString()}`);
     
-    const searchRes = await fetch(`https://api.spotify.com/v1/search?${params.toString()}`, {
+    let searchRes = await fetch(`https://api.spotify.com/v1/search?${params.toString()}`, {
         headers: { Authorization: `Bearer ${accessToken}` }
     });
+
+    // Vercel IPs sometimes trigger 502 Bad Gateway on Spotify. Retry once.
+    if (searchRes.status === 502) {
+        console.log("Spotify returned 502. Retrying in 1 second...");
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        searchRes = await fetch(`https://api.spotify.com/v1/search?${params.toString()}`, {
+            headers: { Authorization: `Bearer ${accessToken}` }
+        });
+    }
 
     if (!searchRes.ok) {
         const err = await searchRes.text();
