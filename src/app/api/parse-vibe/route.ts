@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Groq from "groq-sdk";
 
+const GROQ_VIBE_MODEL = process.env.GROQ_VIBE_MODEL || "openai/gpt-oss-20b";
+
 export async function POST(req: NextRequest) {
   try {
     if (!process.env.GROQ_API_KEY) {
       return NextResponse.json(
-        { error: "GROQ_API_KEY is not configured. Add it to .env.local and restart the dev server." },
+        {
+          error:
+            "GROQ_API_KEY is not configured. Add it to .env.local (local) or Vercel Project Settings → Environment Variables, then redeploy.",
+        },
         { status: 500 }
       );
     }
@@ -65,7 +70,7 @@ The output MUST be a JSON object with this exact structure:
                 content: prompt || "suggest something randomly cool"
             }
         ],
-        model: "llama-3.3-70b-versatile",
+        model: GROQ_VIBE_MODEL,
         temperature: 0.8,
         response_format: { type: "json_object" }
     });
@@ -76,9 +81,22 @@ The output MUST be a JSON object with this exact structure:
     return NextResponse.json(JSON.parse(responseText));
   } catch (error: any) {
     console.error("Vibe parsing error:", error);
+    const groqDetail = error?.error?.message || error?.message;
     if (error?.status === 429) {
         return NextResponse.json({ error: "Groq API rate limit reached. Please wait a minute and try again." }, { status: 429 });
     }
-    return NextResponse.json({ error: 'Failed to parse vibe' }, { status: 500 });
+    if (error?.error?.code === "model_not_found") {
+        return NextResponse.json(
+          {
+            error:
+              "Groq model is unavailable. Set GROQ_VIBE_MODEL to a current model (e.g. openai/gpt-oss-20b) and redeploy.",
+          },
+          { status: 500 }
+        );
+    }
+    return NextResponse.json(
+      { error: groqDetail ? `Failed to parse vibe: ${groqDetail}` : "Failed to parse vibe" },
+      { status: 500 }
+    );
   }
 }
