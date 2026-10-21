@@ -7,7 +7,7 @@ import { useSession } from 'next-auth/react';
 import { LogIn } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 
-import { getSpotifyTracksClient } from '@/utils/spotifySearch';
+import { getSpotifyTracks } from '@/utils/spotifySearch';
 
 export default function PulsePage() {
   const { data: session, status } = useSession();
@@ -27,12 +27,7 @@ export default function PulsePage() {
             if (memStr) memory = JSON.parse(memStr);
         } catch (e) {}
 
-        // @ts-ignore
-        const accessToken = session?.accessToken;
-        
-        if (!accessToken) throw new Error("No access token");
-
-        const newTracks = await getSpotifyTracksClient(vibeData, tracks.length, memory, accessToken);
+        const newTracks = await getSpotifyTracks(vibeData, tracks.length, memory);
         
         if (newTracks && newTracks.length > 0) {
             setTracks(prev => [...prev, ...newTracks]);
@@ -80,8 +75,6 @@ export default function PulsePage() {
                   setVibeData={setVibeData}
                   loading={loading}
                   setLoading={setLoading}
-                  // @ts-ignore
-                  accessToken={session?.accessToken}
                 />
             </div>
         )}

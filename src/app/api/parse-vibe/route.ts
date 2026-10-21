@@ -3,6 +3,12 @@ import Groq from "groq-sdk";
 
 export async function POST(req: NextRequest) {
   try {
+    if (!process.env.GROQ_API_KEY) {
+      return NextResponse.json(
+        { error: "GROQ_API_KEY is not configured. Add it to .env.local and restart the dev server." },
+        { status: 500 }
+      );
+    }
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
     const { prompt, adventure_level = 50, pulse_memory } = await req.json();
 
@@ -71,7 +77,7 @@ The output MUST be a JSON object with this exact structure:
   } catch (error: any) {
     console.error("Vibe parsing error:", error);
     if (error?.status === 429) {
-        return NextResponse.json({ error: "Gemini API rate limit reached. Please wait a minute and try again." }, { status: 429 });
+        return NextResponse.json({ error: "Groq API rate limit reached. Please wait a minute and try again." }, { status: 429 });
     }
     return NextResponse.json({ error: 'Failed to parse vibe' }, { status: 500 });
   }

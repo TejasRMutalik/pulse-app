@@ -10,9 +10,9 @@ const VIBE_CHIPS = [
   "Wind-down", "Discover"
 ];
 
-import { getSpotifyTracksClient } from '@/utils/spotifySearch';
+import { getSpotifyTracks } from '@/utils/spotifySearch';
 
-export default function PulseLanding({ setTracks, setIntentSummary, setVibeData, loading, setLoading, accessToken }: any) {
+export default function PulseLanding({ setTracks, setIntentSummary, setVibeData, loading, setLoading }: any) {
   const [prompt, setPrompt] = useState("");
   const [loadingStep, setLoadingStep] = useState(0);
   const loadingSteps = ["Reading the vibe...", "Finding tracks...", "Tuning the order..."];
@@ -43,14 +43,14 @@ export default function PulseLanding({ setTracks, setIntentSummary, setVibeData,
         });
         const vibeData = await vibeRes.json();
         
-        if (vibeData.error) throw new Error(vibeData.error);
+        if (!vibeRes.ok || vibeData.error) {
+            throw new Error(vibeData.error || "Failed to parse vibe");
+        }
         
         setIntentSummary(vibeData.intent_summary);
         setVibeData(vibeData);
 
-        if (!accessToken) throw new Error("No Spotify access token available.");
-
-        const validTracks = await getSpotifyTracksClient(vibeData, 0, memory, accessToken);
+        const validTracks = await getSpotifyTracks(vibeData, 0, memory);
         
         setTracks(validTracks || []);
     } catch (err: any) {
